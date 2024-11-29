@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
+    /**
+     * Store a user
+     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -31,6 +34,18 @@ class UserController extends Controller
             return Helper::respondSuccess();
         } catch (Exception $e) {
             return $this->respondCreateFailed();
+        }
+    }
+
+    /**
+     * Retrieve all users
+     */
+    public function all()
+    {
+        try {
+            return User::all(['id', 'name', 'email', 'phone', 'password']);
+        } catch (Exception $e) {
+            return Helper::StandardResponse(1001, 'Failed to get data');
         }
     }
 
