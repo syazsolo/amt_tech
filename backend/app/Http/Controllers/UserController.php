@@ -87,6 +87,33 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Delete a user
+     */
+    public function destroy(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|numeric'
+        ]);
+
+        if ($validator->fails()) {
+            return $this->respondDeleteFailed();
+        }
+
+        $user = User::find($request->id);
+
+        if (!$user) {
+            return $this->respondDeleteFailed();
+        }
+
+        try {
+            $user->delete();
+            return Helper::respondSuccess();
+        } catch (Exception $e) {
+            return $this->respondDeleteFailed();
+        }
+    }
+
     private function respondCreateFailed()
     {
         return Helper::StandardResponse(1001, 'Create User Failed');
@@ -95,5 +122,10 @@ class UserController extends Controller
     private function respondUpdateFailed()
     {
         return Helper::StandardResponse(1001, 'Update User Failed');
+    }
+
+    private function respondDeleteFailed()
+    {
+        return Helper::StandardResponse(1001, 'Delete User Failed');
     }
 }

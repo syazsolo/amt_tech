@@ -6,6 +6,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
+// can use more test cases for failure
+
 test('Create: Success', function () {
     $raw = User::factory()->raw();
     $response = $this->postJson('/api/user/add', $raw);
@@ -68,4 +70,28 @@ test('Update: Success', function () {
         'email' => 'updated@example.com',
         'phone' => '012-4567890',
     ]);
+});
+
+test('Delete: Success', function () {
+    $user = User::factory()->create();
+
+    $this->assertDatabaseHas('users', $user->only('id', 'name', 'email', 'phone'));
+
+    $response = $this->postJson('/api/user/delete', [
+        'id' => $user->id
+    ]);
+
+    $response->assertJson(Helper::respondSuccess());
+
+    $this->assertDatabaseMissing('users', [
+        'id' => $user->id
+    ]);
+});
+
+test('Delete: Fail', function () {
+    $response = $this->postJson('/api/user/delete', [
+        'id' => 1
+    ]);
+
+    $response->assertJson(Helper::StandardResponse(1001, 'Delete User Failed'));
 });
