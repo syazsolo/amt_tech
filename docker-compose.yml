@@ -22,3 +22,14 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3306:3306"
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - web
