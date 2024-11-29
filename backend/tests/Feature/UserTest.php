@@ -47,3 +47,25 @@ test('All: 3 users', function () {
 
     $response->assertJson($data);
 });
+
+test('Update: Success', function () {
+    $user = User::factory()->create();
+
+    $this->assertDatabaseHas('users', $user->only('id', 'name', 'email', 'phone'));
+
+    $response = $this->postJson('/api/user/edit', [
+        'id' => $user->id,
+        'name' => 'Updated Name',
+        'email' => 'updated@example.com',
+        'phone' => '012-4567890',
+    ]);
+
+    $response->assertJson(Helper::respondSuccess());
+
+    $this->assertDatabaseHas('users', [
+        'id' => $user->id,
+        'name' => 'Updated Name',
+        'email' => 'updated@example.com',
+        'phone' => '012-4567890',
+    ]);
+});

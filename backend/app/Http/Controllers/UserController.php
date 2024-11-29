@@ -7,6 +7,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -49,8 +50,50 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Update a user
+     */
+    public function update(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|numeric',
+            'name' => 'required|string|max:255',
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($request->id), // Exclude the current user's email
+            ],
+            'phone' => 'nullable|string|regex:/^\+?6?0[0-9]{1,2}-*[0-9]{6,9}$/',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->respondUpdateFailed();
+        }
+
+        $user = User::find($request->id);
+
+        if (!$user) {
+            return $this->respondUpdateFailed();
+        }
+
+        try {
+            $user->update($request->only('name', 'email', 'phone'));
+            $user->save();
+
+            return Helper::respondSuccess();
+        } catch (Exception $e) {
+            return $this->respondUpdateFailed();
+        }
+    }
+
     private function respondCreateFailed()
     {
         return Helper::StandardResponse(1001, 'Create User Failed');
+    }
+
+    private function respondUpdateFailed()
+    {
+        return Helper::StandardResponse(1001, 'Update User Failed');
     }
 }
